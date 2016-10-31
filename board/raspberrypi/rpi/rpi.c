@@ -25,6 +25,9 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+/* Declared in lowlevel_init.S */
+extern const unsigned long fw_dtb_pointer;
+
 static const struct bcm2835_gpio_platdata gpio_platdata = {
 	.base = BCM2835_GPIO_BASE,
 };
@@ -285,6 +288,21 @@ static void set_fdtfile(void)
 	setenv("fdtfile", fdtfile);
 }
 
+/*
+ * If the firmware provided us with a valid FDT at boot time, let's expose it
+ * in ${fdt_addr} so it may be passed unmodified to the kernel.
+ */
+static void set_fdt_addr(void)
+{
+	if (getenv("fdt_addr"))
+		return;
+
+	if (fdt_magic(fw_dtb_pointer) != FDT_MAGIC)
+		return;
+
+	setenv_hex("fdt_addr", fw_dtb_pointer);
+}
+
 static void set_usbethaddr(void)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(struct msg_get_mac_address, msg, 1);
@@ -356,6 +374,7 @@ static void set_serial_number(void)
 
 int misc_init_r(void)
 {
+	set_fdt_addr();
 	set_fdtfile();
 	set_usbethaddr();
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
