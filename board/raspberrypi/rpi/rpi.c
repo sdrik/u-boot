@@ -25,20 +25,8 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-/* From init.S */
-extern void save_boot_params_ret(void);
-
-static unsigned long fw_dtb_pointer __attribute__ ((section(".data")));
-
-#ifdef CONFIG_ARM64
-void save_boot_params(unsigned long dtb)
-#else
-void save_boot_params(unsigned long r0, unsigned long r1, unsigned long dtb)
-#endif
-{
-	fw_dtb_pointer = dtb;
-	save_boot_params_ret();
-}
+/* From lowlevel_init.S */
+extern unsigned long fw_dtb_pointer;
 
 static const struct bcm2835_gpio_platdata gpio_platdata = {
 	.base = BCM2835_GPIO_BASE,
