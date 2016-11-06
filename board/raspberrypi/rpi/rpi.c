@@ -315,6 +315,17 @@ static void set_fdt_addr(void)
 	setenv_hex("fdt_addr", fw_dtb_pointer);
 }
 
+unsigned long board_get_usable_ram_top(unsigned long total_size)
+{
+	if ((gd->ram_top - fw_dtb_pointer) > SZ_64M)
+		return gd->ram_top;
+#ifdef CONFIG_ARM64
+	return fw_dtb_pointer & 0xffffffffffff0000;
+#else
+	return fw_dtb_pointer & 0xffff0000;
+#endif
+}
+
 static void set_usbethaddr(void)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(struct msg_get_mac_address, msg, 1);
